@@ -3,6 +3,7 @@ import sqlite3
 import sys
 import urllib
 import json
+import csv
 
 # Variables
 
@@ -61,24 +62,61 @@ def getMatchData(matchList):
 	matchDetails = []
 
 	for item in matchList:
+		matchTuple = []
+		heroTuple = []
 		currentMatch = str(item)
 		matchDetailsRequest = matchDetailsURL + APIkey + "&match_id=" + currentMatch
-		print matchDetailsRequest
 		matchDetailsFile = urllib.urlopen(matchDetailsRequest)
 		matchDetailsText = matchDetailsFile.read()
 
-		print matchDetailsText
-
 		jsonDetailsText = json.loads(matchDetailsText)
-		matchDetails.append(jsonDetailsText['result']['match_id'])
-		matchDetails.append(jsonDetailsText['result']['radiant_win'])
-		matchDetails.append(jsonDetailsText['result']['duration'])
-		matchDetails.append(jsonDetailsText['result']['first_blood_time'])
+		matchTuple.append(jsonDetailsText['result']['match_id'])
+		matchTuple.append(jsonDetailsText['result']['radiant_win'])
+		matchTuple.append(jsonDetailsText['result']['duration'])
+		matchTuple.append(jsonDetailsText['result']['first_blood_time'])
 
-		print matchDetails	
+		j = 0
+		while j < 10:
+			heroTuple.append(jsonDetailsText['result'['match_id'])
+			heroTuple.append(jsonDetailsText['result']['players'][j]['hero_id'])
+			heroTuple.append(jsonDetailsText['result']['players'][j]['kills'])
+			heroTuple.append(jsonDetailsText['result']['players'][j]['deaths'])
+			heroTuple.append(jsonDetailsText['result']['players'][j]['assists'])
+			heroTuple.append(jsonDetailsText['result']['players'][j]['gold_per_min'])
+			heroTuple.append(jsonDetailsText['result']['players'][j]['xp_per_min'])
+			heroTuple.append(jsonDetailsText['result']['players'][j]['last_hits'])
+			heroTuple.append(jsonDetailsText['result']['players'][j]['denies'])
+			heroDetails.append(heroTuple)
+			j += 1
+		
+		matchDetails.append(matchTuple)
+
+        return matchDetails, heroDetails
+
+
+def outputData(matchDetails, heroDetails):
+    matchOutput = open('matchData.csv', "wb")
+    matchWriter = csv.writer(matchOutput, delimiter='\t', quotechar='"', quoting=csv.QUOTE_ALL)
+
+    heroOutput = open('heroData.csv', "wb")
+    heroWriter = csv.writer(heroOutput, delimiter='\t', quotechar='"', quoting=csv.QUOTE_ALL)
+
+
+    for row in matchDetails:
+        matchWriter.writerow(row)
+
+    for row in heroDetails:
+	heroWriter.writerow(row)
+
+    matchOutput.close()
+    heroOutput.close()
 
 #initDB()
 matchList = getMatchList("0")
 print matchList
 
-getMatchData(matchList)
+matchDetails, heroDetails = matgetMatchData(matchList)
+print matchDetails
+print heroDetails
+
+outputData(matchDetails, heroDetails)
