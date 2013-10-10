@@ -1,33 +1,31 @@
+'''Imports'''
+
 import urllib
 import json
 import csv
 
-# Variables
+'''Variables'''
 
-APIkey = '' #Enter your API key here
-numberOfMatches = 25
-startDate = "1378036800"
-gameMode = "1"
-currentMatch = "0"
+APIkey = '' # Enter your Steam API key here
+numberOfMatches = # Enter number of matches to download
+startMatch = "" # Enter the  ID of the match to start at
+gameMode = "" # Enter the number corresponding to the appropriate gamemode
+matchBracket = "" # Enter the number corresponding the match bracket
+
+# Steam API URLs
 matchHistoryURL = "https://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key="
 matchDetailsURL = "https://api.steampowered.com/IDOTA2Match_570/GetMatchDetails/V001/?key="
 
-# Database setup
+'''Classes'''
 
-def getMatchList(matchBracket):
+# Retrieves a list of matches to process, given the starting variables.
+
+def getMatchList():
 	matchList = []
-
-	matchDateRequest = matchHistoryURL + APIkey + "&matches_requested=1"
-	print matchDateRequest
-	matchDateFile = urllib.urlopen(matchDateRequest)
-	matchDateText = matchDateFile.read()
-	jsonDateText = json.loads(matchDateText)
-	currentMatch = str(jsonDateText['result']['matches'][0]['match_id'])
-        print currentMatch
 
 	i = 0
 	while i < numberOfMatches:
-		matchListRequest = matchHistoryURL + APIkey + "&start_at_match_id=" + currentMatch + "&game_mode=" + gameMode + "&skill=" + matchBracket + "&lobby_type=0&matches_requested=25"
+		matchListRequest = matchHistoryURL + APIkey + "&start_at_match_id=" + str(startMatch + i) + "&game_mode=" + gameMode + "&skill=" + matchBracket + "&lobby_type=0&matches_requested=25"
 		print matchListRequest
 		matchListFile = urllib.urlopen(matchListRequest)
 		matchListText = matchListFile.read()
@@ -41,67 +39,54 @@ def getMatchList(matchBracket):
 
 	return matchList
 
+# Gets match information and writes it to a csv file.
 
 def getMatchData(matchList):
-	heroDetails = []
-	matchDetails = []
-
 	for item in matchList:
-		matchTuple = []
+		matchDetails = []
 		currentMatch = str(item)
 		matchDetailsRequest = matchDetailsURL + APIkey + "&match_id=" + currentMatch
 		matchDetailsFile = urllib.urlopen(matchDetailsRequest)
 		matchDetailsText = matchDetailsFile.read()
 
 		jsonDetailsText = json.loads(matchDetailsText)
-		matchTuple.append(jsonDetailsText['result']['match_id'])
-		matchTuple.append(jsonDetailsText['result']['radiant_win'])
-		matchTuple.append(jsonDetailsText['result']['duration'])
-		matchTuple.append(jsonDetailsText['result']['first_blood_time'])
+		matchDetails.append(jsonDetailsText['result']['match_id'])
+		matchDetails.append(jsonDetailsText['result']['radiant_win'])
+		matchDetails.append(jsonDetailsText['result']['duration'])
+		matchDetails.append(jsonDetailsText['result']['first_blood_time'])
 
 		j = 0
 		while j < 10:
-			heroTuple = []
-			heroTuple.append(jsonDetailsText['result']['match_id'])
-			heroTuple.append(jsonDetailsText['result']['players'][j]['hero_id'])
-			heroTuple.append(jsonDetailsText['result']['players'][j]['kills'])
-			heroTuple.append(jsonDetailsText['result']['players'][j]['deaths'])
-			heroTuple.append(jsonDetailsText['result']['players'][j]['assists'])
-			heroTuple.append(jsonDetailsText['result']['players'][j]['gold_per_min'])
-			heroTuple.append(jsonDetailsText['result']['players'][j]['xp_per_min'])
-			heroTuple.append(jsonDetailsText['result']['players'][j]['last_hits'])
-			heroTuple.append(jsonDetailsText['result']['players'][j]['denies'])
-			heroDetails.append(heroTuple)
+			heroDetails = []
+			heroDetails.append(jsonDetailsText['result']['match_id'])
+			heroDetails.append(jsonDetailsText['result']['players'][j]['hero_id'])
+			heroDetails.append(jsonDetailsText['result']['players'][j]['kills'])
+			heroDetails.append(jsonDetailsText['result']['players'][j]['deaths'])
+			heroDetails.append(jsonDetailsText['result']['players'][j]['assists'])
+			heroDetails.append(jsonDetailsText['result']['players'][j]['gold_per_min'])
+			heroDetails.append(jsonDetailsText['result']['players'][j]['xp_per_min'])
+			heroDetails.append(jsonDetailsText['result']['players'][j]['last_hits'])
+			heroDetails.append(jsonDetailsText['result']['players'][j]['denies'])
 			j += 1
-		
-		matchDetails.append(matchTuple)
 
-        return matchDetails, heroDetails
+			heroOutput = open('heroData.csv', "wb")
+    		heroWriter = csv.writer(heroOutput, delimiter='\t', quotechar='"', quoting=csv.QUOTE_NONE)
+    		matchWriter.writerow(heroDetails)
+    		heroOutput.close()
 
-
-def outputData(matchDetails, heroDetails):
-    matchOutput = open('matchData.csv', "wb")
-    matchWriter = csv.writer(matchOutput, delimiter='\t', quotechar='"', quoting=csv.QUOTE_ALL)
-
-    heroOutput = open('heroData.csv', "wb")
-    heroWriter = csv.writer(heroOutput, delimiter='\t', quotechar='"', quoting=csv.QUOTE_ALL)
-
-
-    for row in matchDetails:
-        matchWriter.writerow(row)
-
-    for row in heroDetails:
-	heroWriter.writerow(row)
-
+	matchOutput = open('matchData.csv', "wb")
+    matchWriter = csv.writer(matchOutput, delimiter='\t', quotechar='"', quoting=csv.QUOTE_NONE)
+	heroWriter.writerow(matchDetails)
     matchOutput.close()
-    heroOutput.close()
 
-#initDB()
-matchList = getMatchList("0")
-print matchList
+# Main program
 
-matchDetails, heroDetails = getMatchData(matchList)
-print matchDetails
-print heroDetails
+def main():
+	matchList = getMatchList()
+	print matchList
 
-outputData(matchDetails, heroDetails)
+	getMatchData(matchList)
+
+
+if __name__ == "__main__":
+    main()
