@@ -1,13 +1,10 @@
-import os
-import sqlite3
-import sys
 import urllib
 import json
 import csv
 
 # Variables
 
-APIkey = #Enter your API key here
+APIkey = '' #Enter your API key here
 numberOfMatches = 25
 startDate = "1378036800"
 gameMode = "1"
@@ -17,19 +14,7 @@ matchDetailsURL = "https://api.steampowered.com/IDOTA2Match_570/GetMatchDetails/
 
 # Database setup
 
-def initDB():
-	try:
-	    con = sqlite3.connect('dota-analytics.db')
-	    cur = con.cursor()
-	    cur.execute("CREATE TABLE matchDetails(matchID INT, winner TEXT, firstBlood INT, duration INT, radiant1 INT, radiant2 INT, radiant3 INT, radiant4 INT, radiant5 INT, dire1 INT, dire2 INT, dire3 INT, dire4 INT, dire5 INT)")
-
-	finally:
-	    if con:
-	        con.close()
-
-
 def getMatchList(matchBracket):
-	print "Testing"
 	matchList = []
 
 	matchDateRequest = matchHistoryURL + APIkey + "&matches_requested=1"
@@ -63,7 +48,6 @@ def getMatchData(matchList):
 
 	for item in matchList:
 		matchTuple = []
-		heroTuple = []
 		currentMatch = str(item)
 		matchDetailsRequest = matchDetailsURL + APIkey + "&match_id=" + currentMatch
 		matchDetailsFile = urllib.urlopen(matchDetailsRequest)
@@ -77,7 +61,8 @@ def getMatchData(matchList):
 
 		j = 0
 		while j < 10:
-			heroTuple.append(jsonDetailsText['result'['match_id'])
+			heroTuple = []
+			heroTuple.append(jsonDetailsText['result']['match_id'])
 			heroTuple.append(jsonDetailsText['result']['players'][j]['hero_id'])
 			heroTuple.append(jsonDetailsText['result']['players'][j]['kills'])
 			heroTuple.append(jsonDetailsText['result']['players'][j]['deaths'])
@@ -115,7 +100,7 @@ def outputData(matchDetails, heroDetails):
 matchList = getMatchList("0")
 print matchList
 
-matchDetails, heroDetails = matgetMatchData(matchList)
+matchDetails, heroDetails = getMatchData(matchList)
 print matchDetails
 print heroDetails
 
