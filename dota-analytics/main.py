@@ -8,7 +8,7 @@ from time import sleep
 '''Variables'''
 
 APIkey = "" # Enter your Steam API key here
-numberOfMatches = 100 # Enter number of matches to download
+numberOfMatches = 2000 # Enter number of matches to download
 dateStart = 1381363200 # Enter the date to start at, in UNIX time
 gameMode = 1 # Enter the number corresponding to the appropriate gamemode
 matchBracket = 0 # Enter the number corresponding the match bracket
@@ -45,21 +45,23 @@ def getMatchList():
 # Gets match and hero information
 
 def getMatchData(matchList):
+	k = 0
+	matchInfo = []
+	heroInfo = []
         for item in matchList:
-                matchInfo = []
-                heroInfo = []
                 currentMatch = str(item)
                 matchDetailsRequest = matchDetailsURL + APIkey + "&match_id=" + currentMatch
                 matchDetailsFile = urllib.urlopen(matchDetailsRequest)
                 matchDetailsText = matchDetailsFile.read()
-                try: jsonDetailsText = json.loads(matchDetailsText)
+                try: 
+		    jsonDetailsText = json.loads(matchDetailsText)
                     matchDetails = []
+		    print jsonDetailsText['result']['match_id']
                     matchDetails.append(jsonDetailsText['result']['match_id'])
                     matchDetails.append(jsonDetailsText['result']['radiant_win'])
                     matchDetails.append(jsonDetailsText['result']['duration'])
                     matchDetails.append(jsonDetailsText['result']['first_blood_time'])
-                    matchinfo.append(matchDetails)
-
+                    matchInfo.append(matchDetails)
 
                     j = 0
                     while j < 10:
@@ -75,9 +77,11 @@ def getMatchData(matchList):
                             heroDetails.append(jsonDetailsText['result']['players'][j]['denies'])
                             heroInfo.append(heroDetails)
                             j += 1
+		    print k
+		    k += 1	
 
-                except:
-                    print matchDetailsText
+                except ValueError:
+                    print "Type error" 
                     sleep(5)
         writeCSV(matchInfo, "match")
         writeCSV(heroInfo, "hero")
@@ -87,7 +91,8 @@ def getMatchData(matchList):
 def writeCSV(details, filename):
     Output = open(filename+'.csv', "wb")
     Writer = csv.writer(Output, delimiter='\t', quotechar='"', quoting=csv.QUOTE_NONE)
-    Writer.writerow(details)
+    for row in details:
+	Writer.writerow(row)
     Output.close()
 
 # Main program
