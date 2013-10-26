@@ -8,10 +8,10 @@ from time import sleep
 '''Variables'''
 
 APIkey = "" # Enter your Steam API key here
-numberOfMatches = 2000 # Enter number of matches to download
+numberOfMatches = 100 # Enter number of matches to download
 dateStart = 1381363200 # Enter the date to start at, in UNIX time
 gameMode = 1 # Enter the number corresponding to the appropriate gamemode
-matchBracket = 0 # Enter the number corresponding the match bracket
+matchBracket = 1 # Enter the number corresponding the match bracket
 
 # Steam API URLs
 matchHistoryURL = "https://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/V001/?key="
@@ -56,8 +56,7 @@ def getMatchData(matchList):
             try: 
 	        jsonDetailsText = json.loads(matchDetailsText)
                 matchDetails = []
-		print jsonDetailsText['result']['match_id']
-                matchDetails.append(jsonDetailsText['result']['match_id'])
+		matchDetails.append(jsonDetailsText['result']['match_id'])
                 matchDetails.append(jsonDetailsText['result']['radiant_win'])
                 matchDetails.append(jsonDetailsText['result']['duration'])
                 matchDetails.append(jsonDetailsText['result']['first_blood_time'])
@@ -68,6 +67,7 @@ def getMatchData(matchList):
 		matchDetails.append(jsonDetailsText['result']['lobby_type'])
 		matchDetails.append(jsonDetailsText['result']['game_mode'])
 		matchDetails.append(jsonDetailsText['result']['human_players'])
+		matchDetails.append(matchBracket)
                 matchInfo.append(matchDetails)
                 j = 0
                 while j < 10:
@@ -86,21 +86,26 @@ def getMatchData(matchList):
 		    heroDetails.append(jsonDetailsText['result']['players'][j]['hero_damage'])
 		    heroDetails.append(jsonDetailsText['result']['players'][j]['tower_damage'])
 		    heroDetails.append(jsonDetailsText['result']['players'][j]['hero_healing'])
+		    heroDetails.append(matchBracket)
                     heroInfo.append(heroDetails)
                     j += 1
-                print k
-	        k += 1	
+	        k += 1
+		if (k % 25 == 0):
+		    print k
             except ValueError:
                 print "Type error" 
                 sleep(5)
 	    if k > 1000:
                 writeCSV(matchInfo, "match")
                 writeCSV(heroInfo, "hero")
+		matchInfo = []
+		heroInfo = []
 	        k = 0
+	writeCSV(matchInfo, "match")
+	writeCSV(heroInfo, "hero")
 
 
-
-def writeCSV(details, filename):
+def writeCSV(details, filename):    
     Output = open(filename+'.csv', "a")
     Writer = csv.writer(Output, delimiter='\t', quotechar='"', quoting=csv.QUOTE_NONE)
     for row in details:
