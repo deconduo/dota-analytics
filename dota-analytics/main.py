@@ -39,8 +39,8 @@ def getMatchList():
                         matchList.append(jsonMatch)
                         j+=1
                 i += 25
-
-        return matchList
+        print matchList
+        getMatchData(matchList)
 
 # Gets match and hero information
 
@@ -49,47 +49,59 @@ def getMatchData(matchList):
 	matchInfo = []
 	heroInfo = []
         for item in matchList:
-                currentMatch = str(item)
-                matchDetailsRequest = matchDetailsURL + APIkey + "&match_id=" + currentMatch
-                matchDetailsFile = urllib.urlopen(matchDetailsRequest)
-                matchDetailsText = matchDetailsFile.read()
-                try: 
-		    jsonDetailsText = json.loads(matchDetailsText)
-                    matchDetails = []
-		    print jsonDetailsText['result']['match_id']
-                    matchDetails.append(jsonDetailsText['result']['match_id'])
-                    matchDetails.append(jsonDetailsText['result']['radiant_win'])
-                    matchDetails.append(jsonDetailsText['result']['duration'])
-                    matchDetails.append(jsonDetailsText['result']['first_blood_time'])
-                    matchInfo.append(matchDetails)
-
-                    j = 0
-                    while j < 10:
-                            heroDetails = []
-                            heroDetails.append(jsonDetailsText['result']['match_id'])
-                            heroDetails.append(jsonDetailsText['result']['players'][j]['hero_id'])
-                            heroDetails.append(jsonDetailsText['result']['players'][j]['kills'])
-                            heroDetails.append(jsonDetailsText['result']['players'][j]['deaths'])
-                            heroDetails.append(jsonDetailsText['result']['players'][j]['assists'])
-                            heroDetails.append(jsonDetailsText['result']['players'][j]['gold_per_min'])
-                            heroDetails.append(jsonDetailsText['result']['players'][j]['xp_per_min'])
-                            heroDetails.append(jsonDetailsText['result']['players'][j]['last_hits'])
-                            heroDetails.append(jsonDetailsText['result']['players'][j]['denies'])
-                            heroInfo.append(heroDetails)
-                            j += 1
-		    print k
-		    k += 1	
-
-                except ValueError:
-                    print "Type error" 
-                    sleep(5)
-        writeCSV(matchInfo, "match")
-        writeCSV(heroInfo, "hero")
+            currentMatch = str(item)
+            matchDetailsRequest = matchDetailsURL + APIkey + "&match_id=" + currentMatch
+            matchDetailsFile = urllib.urlopen(matchDetailsRequest)
+            matchDetailsText = matchDetailsFile.read()
+            try: 
+	        jsonDetailsText = json.loads(matchDetailsText)
+                matchDetails = []
+		print jsonDetailsText['result']['match_id']
+                matchDetails.append(jsonDetailsText['result']['match_id'])
+                matchDetails.append(jsonDetailsText['result']['radiant_win'])
+                matchDetails.append(jsonDetailsText['result']['duration'])
+                matchDetails.append(jsonDetailsText['result']['first_blood_time'])
+		matchDetails.append(jsonDetailsText['result']['tower_status_radiant'])
+		matchDetails.append(jsonDetailsText['result']['tower_status_dire'])
+		matchDetails.append(jsonDetailsText['result']['barracks_status_radiant'])
+		matchDetails.append(jsonDetailsText['result']['barracks_status_dire'])
+		matchDetails.append(jsonDetailsText['result']['lobby_type'])
+		matchDetails.append(jsonDetailsText['result']['game_mode'])
+		matchDetails.append(jsonDetailsText['result']['human_players'])
+                matchInfo.append(matchDetails)
+                j = 0
+                while j < 10:
+                    heroDetails = []
+                    heroDetails.append(jsonDetailsText['result']['match_id'])
+		    heroDetails.append(jsonDetailsText['result']['players'][j]['player_slot'])
+		    heroDetails.append(jsonDetailsText['result']['players'][j]['hero_id'])
+                    heroDetails.append(jsonDetailsText['result']['players'][j]['kills'])
+                    heroDetails.append(jsonDetailsText['result']['players'][j]['deaths'])
+                    heroDetails.append(jsonDetailsText['result']['players'][j]['assists'])
+                    heroDetails.append(jsonDetailsText['result']['players'][j]['gold_per_min'])
+                    heroDetails.append(jsonDetailsText['result']['players'][j]['xp_per_min'])
+                    heroDetails.append(jsonDetailsText['result']['players'][j]['last_hits'])
+                    heroDetails.append(jsonDetailsText['result']['players'][j]['denies'])
+		    heroDetails.append(jsonDetailsText['result']['players'][j]['gold_spent'])
+		    heroDetails.append(jsonDetailsText['result']['players'][j]['hero_damage'])
+		    heroDetails.append(jsonDetailsText['result']['players'][j]['tower_damage'])
+		    heroDetails.append(jsonDetailsText['result']['players'][j]['hero_healing'])
+                    heroInfo.append(heroDetails)
+                    j += 1
+                print k
+	        k += 1	
+            except ValueError:
+                print "Type error" 
+                sleep(5)
+	    if k > 1000:
+                writeCSV(matchInfo, "match")
+                writeCSV(heroInfo, "hero")
+	        k = 0
 
 
 
 def writeCSV(details, filename):
-    Output = open(filename+'.csv', "wb")
+    Output = open(filename+'.csv', "a")
     Writer = csv.writer(Output, delimiter='\t', quotechar='"', quoting=csv.QUOTE_NONE)
     for row in details:
 	Writer.writerow(row)
@@ -98,11 +110,7 @@ def writeCSV(details, filename):
 # Main program
 
 def main():
-        matchList = getMatchList()
-        print matchList
-
-        getMatchData(matchList)
-
+    getMatchList()
 
 if __name__ == "__main__":
     main()
