@@ -8,8 +8,9 @@ from time import sleep
 '''Variables'''
 
 APIkey = "" # Enter your Steam API key here
-numberOfMatches = 100 # Enter number of matches to download
+numberOfMatches = 2000 # Enter number of matches to download
 dateStart = 1381363200 # Enter the date to start at, in UNIX time
+matchStart = 339321344 # Enter the ID of the match to start at
 gameMode = 1 # Enter the number corresponding to the appropriate gamemode
 matchBracket = 1 # Enter the number corresponding the match bracket
 
@@ -25,20 +26,22 @@ def getMatchList():
         matchList = []
         i = 0
         dateMax = dateStart
+	matchStartID = matchStart
         while i < numberOfMatches:
-                matchListRequest = matchHistoryURL + APIkey + "&date_max=" + str(dateMax) + "&game_mode=" + str(gameMode) + "&skill=" + str(matchBracket) + "&lobby_type=0&matches_requested=25"
+                matchListRequest = matchHistoryURL + APIkey + "&date_max=" + str(dateMax) + "&start_at_match_id=" +str(matchStartID) + "&game_mode=" + str(gameMode) + "&skill=" + str(matchBracket) + "&lobby_type=0&matches_requested=100"
                 print matchListRequest
-                matchListFile = urllib.urlopen(matchListRequest)
+		matchListFile = urllib.urlopen(matchListRequest)
                 matchListText = matchListFile.read()
-                print matchListText
                 jsonListText = json.loads(matchListText)
                 j = 0
-                dateMax = jsonListText['result']['matches'][24]['start_time']
-                while j < 25:
+                dateMax = jsonListText['result']['matches'][99]['start_time']
+		matchStartID = jsonListText['result']['matches'][99]['match_id']
+		print dateMax
+                while j < 100:
                         jsonMatch = jsonListText['result']['matches'][j]['match_id']
                         matchList.append(jsonMatch)
                         j+=1
-                i += 25
+                i += 100
         print matchList
         getMatchData(matchList)
 
