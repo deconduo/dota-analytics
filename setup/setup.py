@@ -9,7 +9,7 @@ from operator import itemgetter
 
 '''Variables'''
 
-APIkey = "DA560DCE4A00081D224C7114773E16BC"
+APIkey = ""
 numberOfMatches = 200000 # Enter number of matches to download
 dateStart = 1384098000  # Enter the date to start at, in UNIX time
 gameMode = 1 # Enter the number corresponding to the appropriate gamemode
