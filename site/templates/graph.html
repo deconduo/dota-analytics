@@ -1,6 +1,123 @@
 <!doctype html>
-<title>Graphs</title>
-<h1>Graph 1</h1>
-<img src="/graph/20/1000.png">
-<h1>Graph 2</h1>
-<img src="/graph/50/10000.png">
+
+<html>
+        <head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+                <title>Dota-Analytics Graphs</title>
+                <script src="{{ url_for('static', filename = 'Chart.js') }}"></script>
+                <script src="{{ url_for('static', filename = 'jquery.js') }}"></script>
+                <meta name = "viewport" content = "initial-scale = 1, user-scalable = no">
+		<link rel="stylesheet" href="{{ url_for('static', filename = 'styles.css') }}" type="text/css">
+        </head>
+        <body>
+		<div class="graph-group">
+			<div id="goldDiv">
+				<h1>Gold and XP per minute</h1>
+				<div class=graph"><canvas id="goldData" height="450" width="600"></canvas></div>
+			</div>
+			<div id="csDiv">
+				<h1>Last hits and denies</h1>
+				<div class=graph"><canvas id="csData" height="450" width="600"></canvas></div>
+			</div>
+			<div id="kdaDiv">
+				<h1>Kills, deaths and assists</h1>
+				<div class=graph"><canvas id="kdaData" height="450" width="600"></canvas></div>
+			</div>
+			<div id="skillDiv">
+				<h1>Estimated skill rating</h1>
+				<div class=graph"><canvas id="skillData" height="450" width="600"></canvas></div>
+			</div>
+		</div>
+        <script>
+			var goldChartData = {
+				labels : [{% for item in cleanData[0] %}"{{ item }}",{% endfor %}],
+				datasets : [
+					{
+						fillColor : "rgba(220,220,220,0.5)",
+						strokeColor : "rgba(220,220,220,1)",
+						pointColor : "rgba(220,220,220,1)",
+						pointStrokeColor : "#fff",
+						data : [{% for item in cleanData[1] %}{{ item }},{% endfor %}]
+					},
+ 					{
+						fillColor : "rgba(151,187,205,0.5)",
+						strokeColor : "rgba(151,187,205,1)",
+						pointColor : "rgba(151,187,205,1)",
+						pointStrokeColor : "#fff",
+						data : [{% for item in cleanData[2] %}{{ item }},{% endfor %}]
+					}
+				]
+			}
+			var goldLine = new Chart(document.getElementById("goldData").getContext("2d")).Line(goldChartData);
+
+			var csChartData = {
+				labels : [{% for item in cleanData[0] %}"{{ item }}",{% endfor %}],
+				datasets : [
+					{
+						fillColor : "rgba(220,220,220,0.5)",
+						strokeColor : "rgba(220,220,220,1)",
+						pointColor : "rgba(220,220,220,1)",
+						pointStrokeColor : "#fff",
+						data : [{% for item in cleanData[3] %}{{ item }},{% endfor %}]
+					},
+ 					{
+						fillColor : "rgba(151,187,205,0.5)",
+						strokeColor : "rgba(151,187,205,1)",
+						pointColor : "rgba(151,187,205,1)",
+						pointStrokeColor : "#fff",
+						data : [{% for item in cleanData[4] %}{{ item }},{% endfor %}]
+					}
+				]
+			}
+			var mcsLine = new Chart(document.getElementById("csData").getContext("2d")).Line(csChartData);
+
+
+			var kdaChartData = {
+				labels : [{% for item in cleanData[0] %}"{{ item }}",{% endfor %}],
+				datasets : [
+					{
+						fillColor : "rgba(220,220,220,0.5)",
+						strokeColor : "rgba(220,220,220,1)",
+						pointColor : "rgba(220,220,220,1)",
+						pointStrokeColor : "#fff",
+						data : [{% for item in cleanData[5] %}{{ item }},{% endfor %}]
+					},
+ 					{
+						fillColor : "rgba(151,187,205,0.5)",
+						strokeColor : "rgba(151,187,205,1)",
+						pointColor : "rgba(151,187,205,1)",
+						pointStrokeColor : "#fff",
+						data : [{% for item in cleanData[6] %}{{ item }},{% endfor %}]
+					},
+                                        {
+                                                fillColor : "rgba(205,151,187,0.5)",
+                                                strokeColor : "rgba(205,151,187,1)",
+                                                pointColor : "rgba(205,151,187,1)",
+                                                pointStrokeColor : "#fff",
+                                                data : [{% for item in cleanData[7] %}{{ item }},{% endfor %}]
+                                        }
+
+				]
+			}
+			var kdaLine = new Chart(document.getElementById("kdaData").getContext("2d")).Line(kdaChartData);
+
+
+			var skillChartData = {
+				labels : [{% for item in cleanData[0] %}"{{ item }}",{% endfor %}],
+				datasets : [
+					{
+						fillColor : "rgba(220,220,220,0.5)",
+						strokeColor : "rgba(220,220,220,1)",
+						pointColor : "rgba(220,220,220,1)",
+						pointStrokeColor : "#fff",
+						data : [{% for item in cleanData[8] %}{{ item }},{% endfor %}]
+					}
+				]
+			}
+			var skillLine = new Chart(document.getElementById("skillData").getContext("2d")).Line(skillChartData);
+
+		</script>
+        </body>
+</html>
+
+

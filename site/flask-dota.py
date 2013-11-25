@@ -1,41 +1,29 @@
+from os import environ
 import os
-from flask import Flask, make_response, render_template
+from flask import Flask, make_response, render_template, request, url_for
+import settings
+from celery import Celery
+from tasks import celeryData
 
 app = Flask(__name__)
+app.config.from_object(settings)
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/graph', methods=['GET', 'POST'])
+@app.route('/processing', methods=['POST'])
+def getData():
+    steamID = request.form['steamid']
+    x = 0
+    res = celeryData.apply_async((steamID, x))
+    return res.task_id
 
-@app.route('/graph/<steamid>.png')
-def graph():
-    import datetime
-    import StringIO
-    import random
- 
-    from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-    from matplotlib.figure import Figure
-    from matplotlib.dates import DateFormatter
+@app.route('/graph/<task_id>')
+def graph(task_id):
+    cleanData = celeryData.AsyncResult(task_id).get(timeout=1.0)
+    return render_template('graph.html', cleanData = cleanData)
 
-    rows = 20
-    fig=Figure()
-    ax=fig.add_subplot(111)
-    x=[]
-    y=[]
-    now=datetime.datetime.now()
-    delta=datetime.timedelta(days=1)
-    for i in range(rows):
-        x.append(now)
-        now+=delta
-        y.append(random.randint(0, 1000))
-    ax.plot_date(x, y, '-')
-    ax.xaxis.set_major_formatter(DateFormatter('%Y-%m-%d'))
-    fig.autofmt_xdate()
-    canvas=FigureCanvas(fig)
-    png_output = StringIO.StringIO()
-    canvas.print_png(png_output)
-    response=make_response(png_output.getvalue())
-    response.headers['Content-Type'] = 'image/png'
-    return response
+if __name__ == '__main__':
+    port = int(environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
