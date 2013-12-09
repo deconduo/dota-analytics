@@ -17,7 +17,7 @@ def getData():
     steamID = request.form['steamid']
     x = 0
     res = celeryData.apply_async((steamID, x))
-    return res.task_id
+    return render_template('processing.html', task=res.task_id)
 
 @app.route('/graph/<task_id>')
 def graph(task_id):
@@ -25,5 +25,5 @@ def graph(task_id):
     return render_template('graph.html', cleanData = cleanData)
 
 if __name__ == '__main__':
-    port = int(environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    port = int(environ.get("PORT", 80))
+    app.run(host='0.0.0.0', port=port, debug=False)
